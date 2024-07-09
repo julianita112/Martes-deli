@@ -215,7 +215,7 @@ export function CategoriaInsumos() {
       </div>
       <Card className="mx-3 -mt-16 mb-6 lg:mx-4 border border-blue-gray-100">
         <CardBody className="p-4">
-          <Button onClick={handleCreate} className="btnagregar" color="green" startIcon={<PlusIcon />}>
+          <Button onClick={handleCreate} className="btnagregar" size="sm" startIcon={<PlusIcon />}>
             Crear Categoría
           </Button>
           <div className="mb-6">
