@@ -206,7 +206,7 @@ export function Clientes() {
               onChange={handleSearchChange}
             />
           </div>
-          <div className="mb-12">
+          <div className="mb-1">
             <Typography variant="h6" color="blue-gray" className="mb-4">
               Lista de Clientes
             </Typography>
@@ -238,7 +238,7 @@ export function Clientes() {
                           <IconButton className="cancelar" size="sm" onClick={() => handleDelete(cliente.id_cliente)}>
                             <TrashIcon className="h-4 w-4" />
                           </IconButton>
-                          <IconButton color="light-blue-500" size="sm" onClick={() => handleViewDetails(cliente)}>
+                          <IconButton color="btnvisualizar" size="sm" onClick={() => handleViewDetails(cliente)}>
                             <EyeIcon className="h-4 w-4" />
                           </IconButton>
                         </div>

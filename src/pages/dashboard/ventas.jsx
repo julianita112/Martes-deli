@@ -22,20 +22,26 @@ export function Ventas() {
   const [filteredVentas, setFilteredVentas] = useState([]);
   const [open, setOpen] = useState(false);
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const [clientes, setClientes] = useState([]);
+  const [productos, setProductos] = useState([]);
   const [selectedVenta, setSelectedVenta] = useState({
     id_cliente: "",
     fecha_venta: "",
     estado: "pendiente",
     pagado: false,
-    detalleVentas: [], // Aquí cambiamos a "detalleVentas"
+    detalleVentas: [],
     cliente: { nombre: "", contacto: "" },
   });
   const [currentPage, setCurrentPage] = useState(1);
   const [ventasPerPage] = useState(5);
   const [search, setSearch] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
 
   useEffect(() => {
     fetchVentas();
+    fetchClientes();
+    fetchProductos();
   }, []);
 
   const fetchVentas = async () => {
@@ -48,14 +54,41 @@ export function Ventas() {
     }
   };
 
+  const fetchClientes = async () => {
+    try {
+      const response = await axios.get("http://localhost:3000/api/clientes");
+      setClientes(response.data);
+    } catch (error) {
+      console.error("Error fetching clientes:", error);
+    }
+  };
+
+  const fetchProductos = async () => {
+    try {
+      const response = await axios.get("http://localhost:3000/api/productos");
+      setProductos(response.data);
+    } catch (error) {
+      console.error("Error fetching productos:", error);
+    }
+  };
+
   useEffect(() => {
     filterVentas();
-  }, [search, ventas]);
+  }, [search, startDate, endDate, ventas]);
 
   const filterVentas = () => {
-    const filtered = ventas.filter((venta) =>
+    let filtered = ventas.filter((venta) =>
       venta.cliente.nombre.toLowerCase().includes(search.toLowerCase())
     );
+
+    if (startDate && endDate) {
+      filtered = filtered.filter(
+        (venta) =>
+          new Date(venta.fecha_venta) >= new Date(startDate) &&
+          new Date(venta.fecha_venta) <= new Date(endDate)
+      );
+    }
+
     setFilteredVentas(filtered);
   };
 
@@ -68,7 +101,7 @@ export function Ventas() {
       fecha_venta: "",
       estado: "pendiente",
       pagado: false,
-      detalleVentas: [], // Aquí cambiamos a "detalleVentas"
+      detalleVentas: [],
       cliente: { nombre: "", contacto: "" },
     });
     handleOpen();
@@ -111,13 +144,7 @@ export function Ventas() {
   const handleDetalleChange = (index, e) => {
     const { name, value } = e.target;
     const detalles = [...selectedVenta.detalleVentas];
-    if (name === "cantidad" || name === "id_producto") {
-      detalles[index][name] = value.replace(/\D/, ""); // Solo permite dígitos
-    } else if (name === "precio_unitario") {
-      detalles[index][name] = value.replace(/[^\d.]/, ""); // Permite dígitos y un punto decimal
-    } else {
-      detalles[index][name] = value;
-    }
+    detalles[index][name] = value;
     setSelectedVenta({ ...selectedVenta, detalleVentas: detalles });
   };
 
@@ -143,6 +170,7 @@ export function Ventas() {
       ...venta,
       detalleVentas: venta.detalles || [],
       cliente: venta.cliente || { nombre: "", contacto: "" },
+      fecha_venta: venta.fecha_venta.split('T')[0] // Ajuste aquí
     });
     handleDetailsOpen();
   };
@@ -177,12 +205,11 @@ export function Ventas() {
   const currentVentas = filteredVentas.slice(indexOfFirstVenta, indexOfLastVenta);
 
   const pageNumbers = [];
-  for (let i = 1; i <= Math.ceil(filteredVentas.length /  ventasPerPage); i++) {
+  for (let i = 1; i <= Math.ceil(filteredVentas.length / ventasPerPage); i++) {
     pageNumbers.push(i);
   }
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
-
 
   return (
     <>
@@ -191,11 +218,15 @@ export function Ventas() {
       </div>
       <Card className="mx-3 -mt-16 mb-6 lg:mx-4 border border-blue-gray-100">
         <CardBody className="p-4">
-          <Button onClick={handleCreate}  className="btnagregar" size="sm" startIcon={<PlusIcon />}>
+          <Button onClick={handleCreate} className="btnagregar" size="sm" startIcon={<PlusIcon />}>
             Crear Venta
           </Button>
           <div className="mb-6">
-            <Input type="text" placeholder="Buscar por cliente..." value={search} onChange={handleSearchChange} />
+            <Input type="text" placeholder="Buscar por cliente" value={search} onChange={handleSearchChange} />
+            <div className="mt-4">
+              <Input type="date" label="Fecha Inicio" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+              <Input type="date" label="Fecha Fin" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+            </div>
           </div>
           <div className="mb-12">
             <Typography variant="h6" color="blue-gray" className="mb-4">
@@ -208,41 +239,49 @@ export function Ventas() {
                     Cliente: {venta.cliente.nombre}
                   </Typography>
                   <Typography color="blue-gray">
-                    Fecha de Venta: {new Date(venta.fecha_venta).toLocaleDateString()}
+                    Fecha de Venta: {venta.fecha_venta.split('T')[0]}
                   </Typography>
                   <Typography color="blue-gray">Estado: {venta.estado}</Typography>
                   <div className="mt-4 flex gap-2">
-                    <IconButton className="btnvisualizar" size="sm"  onClick={() => handleViewDetails(venta)}>
+                    <IconButton className="btnvisualizar" size="sm" onClick={() => handleViewDetails(venta)}>
                       <EyeIcon className="h-5 w-5" />
                     </IconButton>
-                    <IconButton  className="btnedit" size="sm" onClick={() => handleUpdateState(venta.id_venta)}>
+                    <IconButton className="btnedit" size="sm" onClick={() => handleUpdateState(venta.id_venta)}>
                       <PencilIcon className="h-5 w-5" />
                     </IconButton>
                   </div>
                 </Card>
               ))}
             </div>
-            <div className="flex justify-center items-center space-x-2">
-            {pageNumbers.map(number => (
-              <Button
-                key={number}
-                onClick={() => paginate(number)}
-                className={`pagination ${number === currentPage ? 'active' : ''}`}               
-                size="sm"
-              >
-                {number}
-              </Button>
-            ))}
-          </div>
+            <div className="mt-4">
+              <ul className="flex justify-center items-center space-x-2">
+                {pageNumbers.map((number) => (
+                  <Button
+                  key={number}
+                  onClick={() => paginate(number)}
+                  className={`pagination ${number === currentPage ? 'active' : ''}`}               
+                  size="sm"
+                >
+                  {number}
+                </Button>
+                ))}
+              </ul>
+            </div>
           </div>
         </CardBody>
       </Card>
       <Dialog open={open} handler={handleOpen} className="overflow-auto max-h-[90vh]">
         <DialogHeader>Crear Venta</DialogHeader>
         <DialogBody divider className="overflow-auto max-h-[60vh]">
-          <Input label="ID Cliente" name="id_cliente" type="number" value={selectedVenta.id_cliente} onChange={handleChange} />
+          <Select label="Cliente" name="id_cliente" value={selectedVenta.id_cliente} onChange={(e) => setSelectedVenta({ ...selectedVenta, id_cliente: e })}>
+            {clientes.map((cliente) => (
+              <Option key={cliente.id_cliente} value={cliente.id_cliente}>
+                {cliente.nombre}
+              </Option>
+            ))}
+          </Select>
           <Input label="Fecha de Venta" name="fecha_venta" type="date" value={selectedVenta.fecha_venta} onChange={handleChange} />
-          <Select label="Estado" name="estado" value={selectedVenta.estado} onChange={(e) => setSelectedVenta({ ...selectedVenta, estado: e.target.value })}>
+          <Select label="Estado" name="estado" value={selectedVenta.estado} onChange={(e) => setSelectedVenta({ ...selectedVenta, estado: e })}>
             <Option value="pendiente">Pendiente</Option>
             <Option value="en preparación">En preparación</Option>
             <Option value="completado">Completado</Option>
@@ -256,7 +295,13 @@ export function Ventas() {
           </Typography>
           {selectedVenta.detalleVentas.map((detalle, index) => (
             <div key={index} className="flex gap-4 mb-4 items-center">
-              <Input label="ID Producto" name="id_producto" type="number" value={detalle.id_producto} onChange={(e) => handleDetalleChange(index, e)} />
+              <Select label="Producto" name="id_producto" value={detalle.id_producto} onChange={(e) => handleDetalleChange(index, { target: { name: 'id_producto', value: e } })}>
+                {productos.map((producto) => (
+                  <Option key={producto.id_producto} value={producto.id_producto}>
+                    {producto.nombre}
+                  </Option>
+                ))}
+              </Select>
               <Input label="Cantidad" name="cantidad" type="number" value={detalle.cantidad} onChange={(e) => handleDetalleChange(index, e)} />
               <Input label="Precio Unitario" name="precio_unitario" type="number" step="0.01" value={detalle.precio_unitario} onChange={(e) => handleDetalleChange(index, e)} />
               <IconButton color="red" onClick={() => handleRemoveDetalle(index)} className="mt-6">
@@ -269,17 +314,17 @@ export function Ventas() {
           </Button>
         </DialogBody>
         <DialogFooter>
-          <Button variant="text" className="btncancelarm" size="sm" onClick={handleOpen}>
+          <Button variant="text" color="red" onClick={handleOpen}>
             Cancelar
           </Button>
-          <Button variant="gradient"  className="btnagregarm" size="sm" onClick={handleSave}>
+          <Button variant="gradient" color="green" onClick={handleSave}>
             Crear Venta
           </Button>
         </DialogFooter>
       </Dialog>
       <Dialog open={detailsOpen} handler={handleDetailsOpen}>
         <DialogHeader>Detalles de la Venta</DialogHeader>
-        <DialogBody divider>
+        <DialogBody divider className="overflow-auto max-h-[60vh]">
           {selectedVenta.cliente && (
             <div>
               <Typography variant="h6" color="blue-gray">
@@ -301,11 +346,11 @@ export function Ventas() {
                   </tr>
                   <tr>
                     <td className="font-semibold">Creado:</td>
-                    <td>{new Date(selectedVenta.cliente.createdAt).toLocaleString()}</td>
+                    <td>{selectedVenta.cliente.createdAt}</td>
                   </tr>
                   <tr>
                     <td className="font-semibold">Actualizado:</td>
-                    <td>{new Date(selectedVenta.cliente.updatedAt).toLocaleString()}</td>
+                    <td>{selectedVenta.cliente.updatedAt}</td>
                   </tr>
                 </tbody>
               </table>
@@ -323,7 +368,7 @@ export function Ventas() {
                 </tr>
                 <tr>
                   <td className="font-semibold">Fecha de Venta:</td>
-                  <td>{new Date(selectedVenta.fecha_venta).toLocaleDateString()}</td>
+                  <td>{selectedVenta.fecha_venta.split('T')[0]}</td>
                 </tr>
                 <tr>
                   <td className="font-semibold">Estado:</td>
@@ -344,7 +389,7 @@ export function Ventas() {
               </tbody>
             </table>
           </div>
-          <div className="mt-4">
+          <div className="mt-4 overflow-x-auto">
             <Typography variant="h6" color="blue-gray">
               Detalles de Productos
             </Typography>
@@ -352,7 +397,7 @@ export function Ventas() {
               <thead>
                 <tr>
                   <th className="font-semibold">ID Detalle</th>
-                  <th className="font-semibold">ID Producto</th>
+                  <th className="font-semibold">Producto</th>
                   <th className="font-semibold">Cantidad</th>
                   <th className="font-semibold">Precio Unitario</th>
                 </tr>
@@ -361,7 +406,7 @@ export function Ventas() {
                 {selectedVenta.detalleVentas.map((detalle) => (
                   <tr key={detalle.id_detalle_venta}>
                     <td>{detalle.id_detalle_venta}</td>
-                    <td>{detalle.id_producto}</td>
+                    <td>{productos.find(p => p.id_producto === detalle.id_producto)?.nombre || 'Producto no encontrado'}</td>
                     <td>{detalle.cantidad}</td>
                     <td>{detalle.precio_unitario}</td>
                   </tr>

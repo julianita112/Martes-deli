@@ -33,7 +33,7 @@ export function Compras() {
 	detalleComprasCompra: []
   });
   const [currentPage, setCurrentPage] = useState(1);
-  const [comprasPerPage] = useState(5);
+  const [comprasPerPage] = useState(6);
   const [search, setSearch] = useState("");
 
   useEffect(() => {

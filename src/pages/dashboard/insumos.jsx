@@ -138,13 +138,13 @@ export function Insumos() {
       const errors = {};
 
       if (!selectedInsumo.nombre.trim()) {
-        errors.nombre = "El nombre es requerido";
+        errors.nombre = "Por favor, ingrese el nombre del insumo";
       } else if (!regex.test(selectedInsumo.nombre)) {
-        errors.nombre = "El nombre solo puede contener letras y espacios";
+        errors.nombre = "El nombre del insumo solo puede contener letras y espacios";
       }
 
       if (!selectedInsumo.id_categoria) {
-        errors.id_categoria = "La categoría es requerida";
+        errors.id_categoria = "Por favor, ingrese la categoría del insumo";
       }
 
       if (Object.keys(errors).length > 0) {

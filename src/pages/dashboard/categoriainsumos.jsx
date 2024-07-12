@@ -123,13 +123,13 @@ export function CategoriaInsumos() {
       const errors = {};
 
       if (!selectedCategoria.nombre.trim()) {
-        errors.nombre = "El nombre es requerido";
+        errors.nombre = "Por favor, ingrese el nombre de la categoría de insumos.";
       } else if (!regex.test(selectedCategoria.nombre)) {
-        errors.nombre = "El nombre solo puede contener letras y espacios";
+        errors.nombre = "El nombre solo puede contener letras y espacios.";
       }
 
       if (!selectedCategoria.descripcion.trim()) {
-        errors.descripcion = "La descripción es requerida";
+        errors.descripcion = "Por favor, ingrese la descripción.";
       }
 
       if (Object.keys(errors).length > 0) {
@@ -216,7 +216,7 @@ export function CategoriaInsumos() {
       <Card className="mx-3 -mt-16 mb-6 lg:mx-4 border border-blue-gray-100">
         <CardBody className="p-4">
           <Button onClick={handleCreate} className="btnagregar" size="sm" startIcon={<PlusIcon />}>
-            Crear Categoría
+            Crear Categoría de Insumos
           </Button>
           <div className="mb-6">
             <Input

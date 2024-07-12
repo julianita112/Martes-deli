@@ -10,6 +10,8 @@ import {
   DialogFooter,
   Input,
   IconButton,
+  Select,
+  Option,
 } from "@material-tailwind/react";
 import { PlusIcon, PencilIcon, TrashIcon, EyeIcon } from "@heroicons/react/24/solid";
 import axios from "../../utils/axiosConfig";
@@ -30,6 +32,7 @@ const Toast = Swal.mixin({
 export function Usuarios() {
   const [usuarios, setUsuarios] = useState([]);
   const [filteredUsuarios, setFilteredUsuarios] = useState([]);
+  const [roles, setRoles] = useState([]);
   const [open, setOpen] = useState(false);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
@@ -46,6 +49,7 @@ export function Usuarios() {
 
   useEffect(() => {
     fetchUsuarios();
+    fetchRoles();
   }, []);
 
   const fetchUsuarios = async () => {
@@ -55,6 +59,16 @@ export function Usuarios() {
       setUsuarios(data);
     } catch (error) {
       console.error("Error fetching usuarios:", error);
+    }
+  };
+
+  const fetchRoles = async () => {
+    try {
+      const response = await axios.get("http://localhost:3000/api/roles");
+      const data = response.data;
+      setRoles(data);
+    } catch (error) {
+      console.error("Error fetching roles:", error);
     }
   };
 
@@ -97,8 +111,8 @@ export function Usuarios() {
       text: `¿Estás seguro de que deseas eliminar al usuario ${user.nombre}?`,
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: '#d33',
-      cancelButtonColor: 'btnagregar',
+      confirmButtonColor: '#76B06F',
+      cancelButtonColor: '#D03F3F ',
       confirmButtonText: 'Sí, eliminar',
       cancelButtonText: 'Cancelar'
     });
@@ -222,7 +236,7 @@ export function Usuarios() {
               onChange={handleSearchChange}
             />
           </div>
-          <div className="mb-12">
+          <div className="mb-1">
             <Typography variant="h6" color="blue-gray" className="mb-4">
               Lista de Usuarios
             </Typography>
@@ -247,15 +261,15 @@ export function Usuarios() {
                 <tbody className="bg-white divide-y divide-gray-200">
                   {currentUsuarios.map((user) => (
                     <tr key={user.id_usuario}>
-                      <td className="px-6 py-2 whitespace-nowrap text-sm font-medium text-gray-900">{user.nombre}</td>
-                      <td className="px-6 py-2 whitespace-nowrap text-sm text-gray-500">{user.email}</td>
-                      <td className="px-6 py-2 whitespace-nowrap text-sm text-gray-500">{user.id_rol}</td>
-                      <td className="px-6 py-2 whitespace-nowrap text-sm text-gray-500">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{user.nombre}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">{user.email}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">{user.nombre_rol}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex space-x-1">
-                          <IconButton className="btnedit" size="sm" onClick={() => handleEdit(user)}>
+                          <IconButton size="sm" className="btnedit" onClick={() => handleEdit(user)}>
                             <PencilIcon className="h-4 w-4" />
                           </IconButton>
-                          <IconButton className="cancelar" size="sm" onClick={() => handleDelete(user)}>
+                          <IconButton className="btncancelarm" size="sm" onClick={() => handleDelete(user)}>
                             <TrashIcon className="h-4 w-4" />
                           </IconButton>
                           <IconButton className="btnvisualizar" size="sm" onClick={() => handleViewDetails(user)}>
@@ -268,134 +282,96 @@ export function Usuarios() {
                 </tbody>
               </table>
             </div>
-          </div>
-          <div className="flex justify-center items-center space-x-2">
-            {pageNumbers.map(number => (
-              <Button
-                key={number}
-                onClick={() => paginate(number)}
-                className={`pagination ${number === currentPage ? 'active' : ''}`}               
-                size="sm"
-              >
-                {number}
-              </Button>
-            ))}
+            <div className="flex justify-center mt-4">
+              {Array.from({ length: Math.ceil(filteredUsuarios.length / usuariosPerPage) }, (_, i) => i + 1).map(number => (
+                <Button
+                  key={number}
+                  className={`pagination ${currentPage === number ? "active" : ""}`}
+                  onClick={() => paginate(number)}
+                >
+                  {number}
+                </Button>
+              ))}
+            </div>
           </div>
         </CardBody>
       </Card>
 
-      {/* Modal de Editar/Crear Usuario */}
-    
-<Dialog open={open} handler={handleOpen} className="custom-modal">
-  <DialogHeader>{editMode ? 'Editar Usuario' : 'Crear Nuevo Usuario'}</DialogHeader>
-  <DialogBody className="custom-modal-body">
-    {/* Contenido del cuerpo del modal */}
-    <div className="flex flex-col space-y-1"> {/* Espacio vertical entre los elementos */}
-      <div className="mb-2">
-        
-        <Input
-          type="text"
-          id="nombre"
-          name="nombre"
-          label="Nombre de Usuario"
-          value={selectedUser.nombre}
-          onChange={handleChange}
-          className={`custom-input ${formErrors.nombre && 'input-error'}`}
-          title="Debe contener al menos 3 letras y no debe incluir números ni caracteres especiales."
-          required
-        />
-        {formErrors.nombre && <p className="text-red-500 text-xs">{formErrors.nombre}</p>}
-      </div>
-      <div className="mb-4">
-        
-        <Input
-          type="email"
-          id="email"
-          name="email"
-          label="Correo Electrónico"
-          value={selectedUser.email}
-          onChange={handleChange}
-          className={`custom-input ${formErrors.email && 'input-error'}`}
-          required
-        />
-        {formErrors.email && <p className="text-red-500 text-xs">{formErrors.email}</p>}
-      </div>
-      <div className="mb-4">
-        
-        <Input
-          type="password"
-          id="password"
-          name="password"
-          label="Contraseña"
-          value={selectedUser.password}
-          onChange={handleChange}
-          className={`custom-input ${formErrors.password && 'input-error'}`}
-          minLength={5}
-          required
-        />
-        {formErrors.password && <p className="text-red-500 text-xs">{formErrors.password}</p>}
-      </div>
-      <div className="mb-2">
-        <label htmlFor="id_rol" className="text-xs text-gray-500">ID Rol</label>
-        <Input
-          type="text"
-          id="id_rol"
-          name="id_rol"
-          placeholder=""
-          value={selectedUser.id_rol}
-          onChange={handleChange}
-          className="custom-input"
-          required
-        />
-      </div>
-    </div>
-  </DialogBody>
-  <DialogFooter className="dialog-footer">
-    <Button variant="text" className="cancelar" onClick={handleOpen}>
-      Cancelar
-    </Button>
-    <Button className="btnagregarm" color="green" onClick={handleSave}>
-      {editMode ? "Guardar Cambios" : "Crear"}
-    </Button>
-  </DialogFooter>
-</Dialog>
-
-
-
-      <Dialog open={detailsOpen} handler={handleDetailsOpen} className="details-modal">
-        <DialogHeader>Detalles del Usuario</DialogHeader>
+      <Dialog open={open} handler={handleOpen} className="custom-modal" size="md">
+        <DialogHeader>
+          {editMode ? "Editar Usuario" : "Crear Usuario"}
+        </DialogHeader>
         <DialogBody>
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse border border-black">
-              <thead className="bg-gradient-to-r from-pink-200 to-pink-500 text-white">
-                <tr>
-                  <th className="p-2 border-b border-black">Campo</th>
-                  <th className="p-2 border-b border-black">Valor</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td className="p-2 border-b border-gray-200">Nombre</td>
-                  <td className="p-2 border-b border-gray-200">{selectedUser.nombre}</td>
-                </tr>
-                <tr>
-                  <td className="p-2 border-b border-gray-200">Email</td>
-                  <td className="p-2 border-b border-gray-200">{selectedUser.email}</td>
-                </tr>
-                <tr>
-                  <td className="p-2 border-b border-gray-200">Password</td>
-                  <td className="p-2 border-b border-gray-200">{selectedUser.password}</td>
-                </tr>
-                <tr>
-                  <td className="p-2 border-b border-gray-200">ID Rol</td>
-                  <td className="p-2 border-b border-gray-200">{selectedUser.id_rol}</td>
-                </tr>
-              </tbody>
-            </table>
+          <div className="space-y-4">
+            <Input
+              label="Nombre"
+              name="nombre"
+              value={selectedUser.nombre}
+              onChange={handleChange}
+              error={formErrors.nombre}
+              required
+            />
+            {formErrors.nombre && <p className="text-red-500 text-xs">{formErrors.nombre}</p>}
+            <Input
+              label="Email"
+              name="email"
+              value={selectedUser.email}
+              onChange={handleChange}
+              error={formErrors.email}
+              required
+            />
+            {formErrors.email && <p className="text-red-500 text-xs">{formErrors.email}</p>}
+            <Input
+              label="Contraseña"
+              type="password"
+              name="password"
+              value={selectedUser.password}
+              onChange={handleChange}
+              error={formErrors.password}
+              required
+            />
+            {formErrors.password && <p className="text-red-500 text-xs">{formErrors.password}</p>}
+            <Select
+              label="Rol"
+              name="id_rol"
+              
+              value={selectedUser.id_rol}
+              onChange={(value) => setSelectedUser({ ...selectedUser, id_rol: value })}
+              required
+            >
+              {roles.map((role) => (
+                <Option key={role.id_rol} value={role.id_rol}>
+                  {role.nombre}
+                  
+                </Option>
+              ))}
+            </Select>
           </div>
         </DialogBody>
         <DialogFooter>
-          <Button variant="text" className="cancelar" color="red" onClick={handleDetailsOpen}>
+          <Button className="btncancelarm" size="sm" color="red" onClick={handleOpen}>
+            Cancelar
+          </Button>
+          <Button className="btnagregarm" size="sm" onClick={handleSave}>
+            {editMode ? "Guardar cambios" : "Crear Usuario"}
+          </Button>
+        </DialogFooter>
+      </Dialog>
+
+      <Dialog open={detailsOpen} handler={handleDetailsOpen} className="custom-modal" size="md">
+        <DialogHeader>Detalles del Usuario</DialogHeader>
+        <DialogBody>
+          <div className="space-y-2">
+            <Typography variant="h6">Nombre:</Typography>
+            <Typography>{selectedUser.nombre}</Typography>
+            <Typography variant="h6">Email:</Typography>
+            <Typography>{selectedUser.email}</Typography>
+            <Typography variant="h6">Rol:</Typography>
+            <Typography>{roles.find(role => role.id_rol === selectedUser.id_rol)?.nombre}</Typography>
+          </div>
+        </DialogBody>
+        <DialogFooter>
+          <Button className="btncancelarm" size="sm" color="red" onClick={handleDetailsOpen}>
             Cerrar
           </Button>
         </DialogFooter>
@@ -403,4 +379,7 @@ export function Usuarios() {
     </>
   );
 }
+
+export default Usuarios;
+
 

@@ -153,7 +153,7 @@ export function Proveedores() {
     const errors = {};
 
     if (!selectedProveedor.nombre.trim()) {
-      errors.nombre = 'El nombre del proveedor es requerido';
+      errors.nombre = 'Por favor, ingrese el nombre del proveedor';
       isValid = false;
     } else if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(selectedProveedor.nombre)) {
       errors.nombre = 'El nombre del proveedor solo puede contener letras y espacios';
@@ -161,7 +161,7 @@ export function Proveedores() {
     }
 
     if (!selectedProveedor.contacto.trim()) {
-      errors.contacto = 'El contacto es requerido';
+      errors.contacto = 'Por favor, ingrese el número de contacto';
       isValid = false;
     } else if (!/^\d{7,}$/.test(selectedProveedor.contacto)) {
       errors.contacto = 'El contacto debe contener al menos 7 dígitos numéricos';

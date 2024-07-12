@@ -29,8 +29,9 @@
 }
 
 .btnagregarm {
-  background: linear-gradient(145deg, #255b47, #6aa858);
+  background: linear-gradient(145deg, #255b47, #6aa858) ;
   color: white;
+  
 
 }
 
@@ -163,6 +164,7 @@
   padding: 0.75rem !important; /* Relleno de celdas */
   border-bottom: 1px solid #12365d !important; /* Borde inferior */
   text-align: left !important; /* Alineación de texto */
+
 }
 
 /* Estilo para las cabeceras de la tabla dentro del modal de detalles */
