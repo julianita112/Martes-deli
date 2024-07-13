@@ -111,8 +111,8 @@ export function Usuarios() {
       text: `¿Estás seguro de que deseas eliminar al usuario ${user.nombre}?`,
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: '#76B06F',
-      cancelButtonColor: '#D03F3F ',
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
       confirmButtonText: 'Sí, eliminar',
       cancelButtonText: 'Cancelar'
     });
@@ -218,6 +218,12 @@ export function Usuarios() {
     setDetailsOpen(true);
   };
 
+  // Función para obtener el nombre del rol de un usuario
+  const getRoleName = (roleId) => {
+    const role = roles.find(r => r.id_rol === roleId);
+    return role ? role.nombre : "Desconocido";
+  };
+
   return (
     <>
       <div className="relative mt-2 h-32 w-full overflow-hidden rounded-xl bg-[url('/img/background-image.png')] bg-cover bg-center">
@@ -225,18 +231,18 @@ export function Usuarios() {
       </div>
       <Card className="mx-3 -mt-16 mb-6 lg:mx-4 border border-blue-gray-100">
         <CardBody className="p-4">
-          <Button onClick={handleCreate} className="btnagregar" color="green" size="sm" startIcon={<PlusIcon className="h-4 w-4" />}>
+          <Button onClick={handleCreate} className="btnagregar" size="sm" startIcon={<PlusIcon className="h-4 w-4" />}>
             Crear Usuario
           </Button>
           <div className="mb-6">
             <Input
               type="text"
-              placeholder="Buscar por nombre..."
+              placeholder="Buscar por  de usuario..."
               value={search}
               onChange={handleSearchChange}
             />
           </div>
-          <div className="mb-1">
+          <div className="mb-12">
             <Typography variant="h6" color="blue-gray" className="mb-4">
               Lista de Usuarios
             </Typography>
@@ -244,16 +250,16 @@ export function Usuarios() {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th scope="col" className="px-10 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Nombre
                     </th>
-                    <th scope="col" className="px-20 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Email
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Correo Electrónico
                     </th>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Rol
                     </th>
-                    <th scope="col" className="px-10 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Acciones
                     </th>
                   </tr>
@@ -262,19 +268,21 @@ export function Usuarios() {
                   {currentUsuarios.map((user) => (
                     <tr key={user.id_usuario}>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{user.nombre}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">{user.email}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">{user.nombre_rol}</td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex space-x-1">
-                          <IconButton size="sm" className="btnedit" onClick={() => handleEdit(user)}>
-                            <PencilIcon className="h-4 w-4" />
-                          </IconButton>
-                          <IconButton className="btncancelarm" size="sm" onClick={() => handleDelete(user)}>
-                            <TrashIcon className="h-4 w-4" />
-                          </IconButton>
-                          <IconButton className="btnvisualizar" size="sm" onClick={() => handleViewDetails(user)}>
-                            <EyeIcon className="h-4 w-4" />
-                          </IconButton>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.email}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{getRoleName(user.id_rol)}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <div className="flex space-x-1">
+                      <IconButton onClick={() => handleEdit(user)} className="btnedit" size="sm">
+                          <PencilIcon className="h-4 w-4" />
+                        </IconButton>
+                       
+                    
+                        <IconButton onClick={() => handleDelete(user)} className="btncancelarm" size="sm">
+                          <TrashIcon className="h-4 w-4" />
+                        </IconButton>
+                        <IconButton onClick={() => handleViewDetails(user)} className="btnvisualizar" size="sm">
+                          <EyeIcon className="h-4 w-4" />
+                        </IconButton>
                         </div>
                       </td>
                     </tr>
@@ -282,28 +290,32 @@ export function Usuarios() {
                 </tbody>
               </table>
             </div>
-            <div className="flex justify-center mt-4">
-              {Array.from({ length: Math.ceil(filteredUsuarios.length / usuariosPerPage) }, (_, i) => i + 1).map(number => (
-                <Button
+            {/* Paginación */}
+            <div className="mt-4">
+              <ul className="flex justify-center items-center space-x-2">
+                {pageNumbers.map((number) => (
+                  <Button
                   key={number}
-                  className={`pagination ${currentPage === number ? "active" : ""}`}
                   onClick={() => paginate(number)}
+                  className={`pagination ${number === currentPage ? 'active' : ''}`}               
+                  size="sm"
                 >
                   {number}
                 </Button>
-              ))}
+                ))}
+              </ul>
             </div>
           </div>
         </CardBody>
       </Card>
 
-      <Dialog open={open} handler={handleOpen} className="custom-modal" size="md">
-        <DialogHeader>
-          {editMode ? "Editar Usuario" : "Crear Usuario"}
-        </DialogHeader>
-        <DialogBody>
+      {/* Modal de Crear/Editar Usuario */}
+      <Dialog open={open} handler={handleOpen}>
+        <DialogHeader>{editMode ? "Editar Usuario" : "Crear Usuario"}</DialogHeader>
+        <DialogBody divider>
           <div className="space-y-4">
             <Input
+              size="lg"
               label="Nombre"
               name="nombre"
               value={selectedUser.nombre}
@@ -311,67 +323,76 @@ export function Usuarios() {
               error={formErrors.nombre}
               required
             />
-            {formErrors.nombre && <p className="text-red-500 text-xs">{formErrors.nombre}</p>}
             <Input
-              label="Email"
+              size="lg"
+              label="Correo Electrónico"
               name="email"
+              type="email"
               value={selectedUser.email}
               onChange={handleChange}
               error={formErrors.email}
               required
             />
-            {formErrors.email && <p className="text-red-500 text-xs">{formErrors.email}</p>}
             <Input
+              size="lg"
               label="Contraseña"
-              type="password"
               name="password"
+              type="password"
               value={selectedUser.password}
               onChange={handleChange}
               error={formErrors.password}
               required
             />
-            {formErrors.password && <p className="text-red-500 text-xs">{formErrors.password}</p>}
             <Select
               label="Rol"
               name="id_rol"
-              
               value={selectedUser.id_rol}
               onChange={(value) => setSelectedUser({ ...selectedUser, id_rol: value })}
               required
             >
               {roles.map((role) => (
-                <Option key={role.id_rol} value={role.id_rol}>
-                  {role.nombre}
-                  
-                </Option>
+                <Option key={role.id_rol} value={role.id_rol}>{role.nombre}</Option>
               ))}
             </Select>
           </div>
         </DialogBody>
         <DialogFooter>
-          <Button className="btncancelarm" size="sm" color="red" onClick={handleOpen}>
+          <Button
+            className="cancelar" size="sm"
+
+            onClick={handleOpen}
+            
+          >
             Cancelar
           </Button>
-          <Button className="btnagregarm" size="sm" onClick={handleSave}>
-            {editMode ? "Guardar cambios" : "Crear Usuario"}
+          <Button
+           className="btnagregarm" size="sm"
+
+            color="green"
+            onClick={handleSave}
+          >
+            {editMode ? "Guardar Cambios" : "Crear Usuario"}
           </Button>
         </DialogFooter>
       </Dialog>
 
-      <Dialog open={detailsOpen} handler={handleDetailsOpen} className="custom-modal" size="md">
+      {/* Modal de Detalles del Usuario */}
+      <Dialog open={detailsOpen} handler={handleDetailsOpen}>
         <DialogHeader>Detalles del Usuario</DialogHeader>
-        <DialogBody>
-          <div className="space-y-2">
-            <Typography variant="h6">Nombre:</Typography>
-            <Typography>{selectedUser.nombre}</Typography>
-            <Typography variant="h6">Email:</Typography>
-            <Typography>{selectedUser.email}</Typography>
-            <Typography variant="h6">Rol:</Typography>
-            <Typography>{roles.find(role => role.id_rol === selectedUser.id_rol)?.nombre}</Typography>
+        <DialogBody divider>
+          <div className="space-y-4">
+            <Typography variant="h6">Nombre: {selectedUser.nombre}</Typography>
+            <Typography variant="h6">Correo Electrónico: {selectedUser.email}</Typography>
+            <Typography variant="h6">Rol: {getRoleName(selectedUser.id_rol)}</Typography>
           </div>
         </DialogBody>
         <DialogFooter>
-          <Button className="btncancelarm" size="sm" color="red" onClick={handleDetailsOpen}>
+          <Button
+            variant="text"
+            color="red"
+            onClick={handleDetailsOpen}
+            className="mr-1"
+          >
             Cerrar
           </Button>
         </DialogFooter>
@@ -379,7 +400,3 @@ export function Usuarios() {
     </>
   );
 }
-
-export default Usuarios;
-
-
